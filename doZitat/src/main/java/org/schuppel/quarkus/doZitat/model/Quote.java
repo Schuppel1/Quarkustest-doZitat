@@ -3,13 +3,8 @@ package org.schuppel.quarkus.doZitat.model;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Date;
+
 
 @Entity
 public class Quote extends PanacheEntity {

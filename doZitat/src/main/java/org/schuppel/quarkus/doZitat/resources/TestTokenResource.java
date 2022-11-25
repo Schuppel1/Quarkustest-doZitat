@@ -1,0 +1,140 @@
+package org.schuppel.quarkus.doZitat.resources;
+import java.security.Principal;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
+
+import io.smallrye.jwt.build.Jwt;
+import org.apache.commons.lang3.time.DateUtils;
+import org.eclipse.microprofile.jwt.Claim;
+import org.eclipse.microprofile.jwt.Claims;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.schuppel.quarkus.doZitat.model.AppUsers;
+
+
+@Path("/secured")
+@RequestScoped
+public class TestTokenResource {
+    @Inject
+    JsonWebToken jwt;
+    @Inject
+    @Claim(standard = Claims.sub)
+    String tokenUserName;
+
+    @Claim(standard = Claims.exp)
+    String tokenExpire;
+
+    AppUsers dummy = new AppUsers();
+
+
+    @GET
+    @Path("permit-all")
+    @PermitAll
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello(@Context SecurityContext ctx) {
+        return getResponseString(ctx);
+    }
+
+    @GET
+    @Path("get-user-token")
+    @PermitAll
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getUserToken(AppUsers user) {
+
+        return generateUserToken(user);
+    }
+
+    @GET
+    @Path("get-admin-token")
+    @PermitAll
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getAdminToken() {
+        dummy.setName("Harald");
+        dummy.id= Long.valueOf(1);
+
+        return generateAdminToken(dummy);
+    }
+
+
+    @GET
+    @Path("roles-allowed")
+    @RolesAllowed({ "User", "Admin" })
+    @Produces(MediaType.TEXT_PLAIN)
+    public String helloRolesAllowed(@Context SecurityContext ctx) {
+        return getResponseString(ctx) + ", birthdate: " + jwt.getClaim("birthdate").toString();
+    }
+
+    @GET
+    @Path("roles-allowed-admin")
+    @RolesAllowed("Admin")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String helloRolesAllowedAdmin(@Context SecurityContext ctx) {
+        return getResponseString(ctx) + ", Token Username: " + jwt.getClaim(Claims.sub.name()).toString()
+                +" , TokenExpires at: "+ jwt.getClaim(Claims.exp.name()).toString();
+    }
+
+    private String getResponseString(SecurityContext ctx) {
+        String name;
+        if (ctx.getUserPrincipal() == null) {
+            name = "anonymous";
+        } else if (!ctx.getUserPrincipal().getName().equals(jwt.getName())) {
+            throw new InternalServerErrorException("Principal and JsonWebToken names do not match");
+        } else {
+            name = ctx.getUserPrincipal().getName();
+        }
+        return String.format("hello + %s,"
+                        + " isHttps: %s,"
+                        + " authScheme: %s,"
+                        + " hasJWT: %s",
+                name, ctx.isSecure(), ctx.getAuthenticationScheme(), hasJwt());
+    }
+
+    private boolean hasJwt() {
+        return jwt.getClaimNames() != null;
+    }
+
+    private String generateUserToken(AppUsers user) {
+        Date currentTime = new Date();
+        Date expDate = DateUtils.addHours(currentTime, 24);
+
+        String token =
+                Jwt.issuer("https://example.com/issuer") // (1)
+                        .upn("sven@schuppel.org")
+                        .groups(new HashSet<>(Arrays.asList("User")))
+                        .expiresIn(300L)
+                        .claim(Claims.sub.name(), user.id.toString())
+                        .claim(Claims.exp.name(), expDate.getTime())
+                        .sign();
+        return token;
+    }
+
+    private String generateAdminToken(AppUsers user) {
+        Date currentTime = new Date();
+        Date expDate = DateUtils.addHours(currentTime, 24);
+
+        String token =
+                Jwt.issuer("https://example.com/issuer")
+                        .upn("sven@schuppel.org")
+                        .groups(new HashSet<>(Arrays.asList("Admin")))
+                        .expiresIn(300L)
+                        .claim(Claims.sub.name(), user.id.toString())
+                        .claim(Claims.exp.name(), expDate.getTime())
+                        .sign();
+        return token;
+    }
+}

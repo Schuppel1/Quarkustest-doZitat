@@ -1,21 +1,17 @@
 package org.schuppel.quarkus.doZitat.repository;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.panache.common.Sort;
 import org.schuppel.quarkus.doZitat.model.Quote;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+
 import java.util.List;
-import java.util.Optional;
+
 
 @ApplicationScoped
-public class QuoteRepository {
-
-
+public class QuoteRepository implements PanacheRepository<Quote> {
 
     public void persist(Quote quote) {
         Quote.persist(quote);
@@ -37,12 +33,15 @@ public class QuoteRepository {
         return allQuery.getResultList();*/
 
         //mit Panache
+
         return Quote.findAll().list();
 
     }
 
-    public Optional<Quote> getQuote(int id) {
-        Long longid= Long.valueOf(id);
-        return Optional.ofNullable(findById(longid));
+    public Quote getQuote(int id) {
+        Long longId= Long.valueOf(id);
+        return findById(longId);
     }
+
+
 }
