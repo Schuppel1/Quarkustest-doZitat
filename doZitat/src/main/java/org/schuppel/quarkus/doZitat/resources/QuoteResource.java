@@ -60,9 +60,12 @@ public class QuoteResource {
     @Path("/{id}")
     @PermitAll
     @Produces(MediaType.APPLICATION_JSON)
-    public Optional<Quote> getQuote(@PathParam("id") int id) {
+    public Response getQuote(@PathParam("id") int id) {
         logs.info("REST GET Quote Nr. " +id);
-       return Optional.ofNullable(Optional.of(repository.getQuote(id)).orElseThrow(NotFoundException::new));
+        if(repository.getQuote(id)==null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+       return Response.status(Response.Status.OK).entity(repository.getQuote(id)).build();
     }
 
     @POST
@@ -129,7 +132,8 @@ public class QuoteResource {
     @Transactional
     @Path("/{id}")
     public Response delete(@PathParam("id") int id, @Context SecurityContext ctx) {
-        Quote persQuote = repository.findById((long) id);
+        System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaa"+id);
+        Quote persQuote = repository.getQuote(id);
         Long userId = Long.parseLong(jwt.getClaim(Claims.sub.name()).toString());
 
         if(persQuote == null) {
