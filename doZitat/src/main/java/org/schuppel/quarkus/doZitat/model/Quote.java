@@ -13,15 +13,15 @@ public class Quote extends PanacheEntity {
     public String quote;
     public String profName;
     public String course;
-    public Instant created = Instant.now();
-    @ManyToOne
-    public AppUsers creator;
+    public Instant created;
 
-    public Quote(String quote, String profName, String course, AppUsers creator) {
+    public Long creatorId;
+
+    public Quote(String quote, String profName, String course, Long creator) {
         this.quote = quote;
         this.profName = profName;
         this.course = course;
-        this.creator = creator;
+        this.creatorId = creator;
     }
 
     public Quote(){};

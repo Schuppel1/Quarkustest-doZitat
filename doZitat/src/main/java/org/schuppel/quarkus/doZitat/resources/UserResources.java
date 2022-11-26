@@ -101,19 +101,23 @@ public class UserResources {
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     public Response post(AppUsers user) {
-        if(!checkuser(user)) {
+        if(!checkUser(user)) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         if (repository.userNameIsFree(user.getName())) {
-            repository.save(user);
+            AppUsers toSaveUser = new AppUsers();
+            toSaveUser.setRole("User");
+            toSaveUser.setName(user.getName());
+            toSaveUser.setCryptedPassword(user.getPassword());
+            repository.save(toSaveUser);
             return Response.ok().build();
         }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.status(Response.Status.FOUND).build();
     }
 
     //Hilfsfunktionen
     //testet ob die Eingabe korrekt ist
-    private boolean checkuser(AppUsers user) {
+    private boolean checkUser(AppUsers user) {
         if(user.getPassword().isEmpty()
                 ||user.getName().isEmpty()
                 || user.getName().isBlank()
@@ -121,7 +125,7 @@ public class UserResources {
                 || user.getName().isBlank()) {
             return false;
         }
-        return user.getRole().equals("Admin") || user.getRole().equals("User");
+        return true;
     }
 
     private String generateAdminToken(AppUsers user) {

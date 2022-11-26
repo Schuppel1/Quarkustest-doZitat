@@ -3,19 +3,23 @@ package org.schuppel.quarkus.doZitat.resources;
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
+import org.schuppel.quarkus.doZitat.model.AppUsers;
 import org.schuppel.quarkus.doZitat.model.Quote;
 import org.schuppel.quarkus.doZitat.model.Roles;
 import org.schuppel.quarkus.doZitat.repository.QuoteRepository;
+import org.schuppel.quarkus.doZitat.repository.UsersRepository;
 import org.schuppel.quarkus.doZitat.utils.TokenGenerator;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +30,9 @@ public class QuoteResource {
 
     @Inject
     QuoteRepository repository;
+
+    @Inject
+    UsersRepository userRepository;
 
     @Inject
     JsonWebToken jwt;
@@ -61,21 +68,63 @@ public class QuoteResource {
 
     @POST
     @RolesAllowed({ "User", "Admin" })
+    @Transactional
     public Response post(@Context SecurityContext ctx, Quote newQuote) {
         /*  Safe da der Token verschlüsselt und entschlüsselt wurde.
             Somit ist der Token durch die generateUserToken oder generateAdminToken
             entstanden */
         Long userId = Long.parseLong(jwt.getClaim(Claims.sub.name()).toString());
 
-        if(repository.findById(newQuote.id)== null) {
+        if(!checkQuote(newQuote)){
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        // Falls ein Quote geupdatet werden soll, muss put verwendet werden.
+        if(newQuote.id==null ||newQuote.id==0L ) {
+            newQuote.creatorId=userId;
+            newQuote.created = Instant.now();
             repository.persist(newQuote);
             return Response.status(201).build();
-        } else
-            return Response.status(404).build();
+        } else {
+            return Response.status(Response.Status.FOUND).build();
+        }
+    }
+
+    @PUT
+    @RolesAllowed({ "User", "Admin" })
+    @Transactional
+    @Path("/{id}")
+    public Response put(@PathParam("id") int id, @Context SecurityContext ctx, Quote newQuote) {
+
+        Long userId = Long.valueOf(id);
+        
+        if(repository.findById(userId)==null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+
+
+        // Falls ein Quote geupdatet werden soll, muss put verwendet werden.
+        if(newQuote.id==null ||newQuote.id==0L ) {
+            newQuote.creatorId=userId;
+            newQuote.created = Instant.now();
+            repository.persist(newQuote);
+            return Response.status(201).build();
+        } else {
+            return Response.status(Response.Status.FOUND).build();
+        }
     }
 
     private boolean checkQuote(Quote newQuote) {
-        return false;
+        if(newQuote.quote.isEmpty()
+                || newQuote.quote.isBlank()
+                || newQuote.course.isBlank()
+                || newQuote.course.isEmpty()
+                || newQuote.profName.isBlank()
+                || newQuote.profName.isEmpty()) {
+            return false;
+        }
+        return true;
     }
 
 }
