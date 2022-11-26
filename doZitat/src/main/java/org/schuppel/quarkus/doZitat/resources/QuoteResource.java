@@ -3,7 +3,6 @@ package org.schuppel.quarkus.doZitat.resources;
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
-import org.schuppel.quarkus.doZitat.model.AppUsers;
 import org.schuppel.quarkus.doZitat.model.Quote;
 import org.schuppel.quarkus.doZitat.model.Roles;
 import org.schuppel.quarkus.doZitat.repository.QuoteRepository;
