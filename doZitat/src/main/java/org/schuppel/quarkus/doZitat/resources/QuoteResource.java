@@ -112,16 +112,22 @@ public class QuoteResource {
                 return Response.status(Response.Status.UNAUTHORIZED).build();
             }
         }
-        if(!newQuote.quote.isEmpty() && !newQuote.quote.isBlank()) {
-            persQuote.quote= newQuote.quote;
+        if(newQuote.quote != null) {
+            if (!newQuote.quote.isEmpty() && !newQuote.quote.isBlank()) {
+                persQuote.quote = newQuote.quote;
+            }
         }
 
-        if(!newQuote.profName.isEmpty() && !newQuote.profName.isBlank()) {
-            persQuote.profName= newQuote.profName;
+        if(newQuote.profName != null) {
+            if(!newQuote.profName.isEmpty() && !newQuote.profName.isBlank()) {
+                persQuote.profName= newQuote.profName;
+            }
         }
 
-        if(!newQuote.course.isEmpty() && !newQuote.course.isBlank()) {
-            persQuote.course= newQuote.course;
+        if(newQuote.course != null) {
+            if (!newQuote.course.isEmpty() && !newQuote.course.isBlank()) {
+                persQuote.course = newQuote.course;
+            }
         }
         repository.persist(persQuote);
         return  Response.status(Response.Status.OK).build();
