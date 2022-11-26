@@ -96,23 +96,58 @@ public class QuoteResource {
     @Path("/{id}")
     public Response put(@PathParam("id") int id, @Context SecurityContext ctx, Quote newQuote) {
 
-        Long userId = Long.valueOf(id);
-        
-        if(repository.findById(userId)==null) {
+        Long quoteId = (long) id;
+        Long userId = Long.parseLong(jwt.getClaim(Claims.sub.name()).toString());
+
+        Quote persQuote = repository.findById(quoteId);
+
+        if(persQuote==null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-
-
-        // Falls ein Quote geupdatet werden soll, muss put verwendet werden.
-        if(newQuote.id==null ||newQuote.id==0L ) {
-            newQuote.creatorId=userId;
-            newQuote.created = Instant.now();
-            repository.persist(newQuote);
-            return Response.status(201).build();
-        } else {
-            return Response.status(Response.Status.FOUND).build();
+        if(!persQuote.creatorId.equals(userId)) {
+            if(!jwt.getGroups().contains("Admin")) {
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
         }
+        if(!newQuote.quote.isEmpty() && !newQuote.quote.isBlank()) {
+            persQuote.quote= newQuote.quote;
+        }
+
+        if(!newQuote.profName.isEmpty() && !newQuote.profName.isBlank()) {
+            persQuote.profName= newQuote.profName;
+        }
+
+        if(!newQuote.course.isEmpty() && !newQuote.course.isBlank()) {
+            persQuote.course= newQuote.course;
+        }
+        repository.persist(persQuote);
+        return  Response.status(Response.Status.OK).build();
+    }
+
+    @DELETE
+    @RolesAllowed({ "User", "Admin" })
+    @Transactional
+    @Path("/{id}")
+    public Response delete(@PathParam("id") int id, @Context SecurityContext ctx) {
+        Quote persQuote = repository.findById((long) id);
+        Long userId = Long.parseLong(jwt.getClaim(Claims.sub.name()).toString());
+
+        if(persQuote == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if(jwt.getGroups().contains("Admin")) {
+            repository.deleteById((long) id);
+            return Response.status(Response.Status.OK).build();
+        }
+
+        if(userId == persQuote.creatorId) {
+            repository.deleteById((long) id);
+            return Response.status(Response.Status.OK).build();
+        }
+
+        return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
     private boolean checkQuote(Quote newQuote) {
