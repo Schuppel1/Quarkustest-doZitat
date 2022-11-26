@@ -3,36 +3,32 @@ package org.schuppel.quarkus.doZitat.model;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import io.quarkus.security.jpa.Password;
-import io.quarkus.security.jpa.Roles;
-import io.quarkus.security.jpa.UserDefinition;
-import io.quarkus.security.jpa.Username;
 
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 
 @Entity
-@UserDefinition
-public class AppUsers extends PanacheEntity {
+public class AppUsers{
 
-    @Username
-    private String loginId;
 
-    @Password
+    @Id
+    @GeneratedValue
+    private Long id;
+
     private String password;
 
-    private String name;
+    private String username;
 
-    @Roles
     private String role;
 
-    public String getLoginId() {
-        return loginId;
+    public Long getId(){
+        return id;
     }
-
-    public void setLoginId(String loginId) {
-        this.loginId = loginId;
+    public void setId(Long id){
+        this.id = id;
     }
 
     public String getPassword() {
@@ -40,15 +36,19 @@ public class AppUsers extends PanacheEntity {
     }
 
     public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setCryptedPassword(String password) {
         this.password = BcryptUtil.bcryptHash(password+"SalzigesSalz");
     }
 
     public String getName() {
-        return name;
+        return username;
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.username = name;
     }
 
     public String getRole() {

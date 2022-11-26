@@ -26,10 +26,11 @@ import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.schuppel.quarkus.doZitat.model.AppUsers;
 
+//Diese Klasse diente zum testen der JWT. Wird in der UserResource umgesetzt
 
 @Path("/secured")
 @RequestScoped
-public class TestTokenResource {
+public class TestTokenResourceold {
     @Inject
     JsonWebToken jwt;
     @Inject
