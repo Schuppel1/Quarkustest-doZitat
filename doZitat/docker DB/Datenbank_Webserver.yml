@@ -6,9 +6,9 @@ services:                                       #
          - 3306:3306                            # Port Einstellung
         environment:                            # Umgebungsvariablen.
          - MARIADB_ROOT_PASSWORD=rootpassword   # Rootpasswort
-         - MARIADB_DATABASE=testDB              # erstellte Start Datenbank
-         - MARIADB_USER=testUser                # angelegter Benutzer
-         - MARIADB_PASSWORD=password            # passwort des Benutzer
+         - MARIADB_DATABASE=doZitat              # erstellte Start Datenbank
+         - MARIADB_USER=doZitat                # angelegter Benutzer
+         - MARIADB_PASSWORD=doZitat            # passwort des Benutzer
     phpmyadmin:                                 # Name des neuen Service
         image: phpmyadmin                       # image 
         ports: 
