@@ -1,0 +1,3 @@
+im angegebenen Ordner
+
+docker compose -f .\Datenbank_Webserver.yml up

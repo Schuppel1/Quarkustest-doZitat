@@ -1,0 +1,17 @@
+version: "3.9"                                  # Docker Compose Version
+services:                                       #
+    datebaseServer:                             # name des Containers
+        image: mariadb:10.9.2                   # das Ausgewahlte Image
+        ports: 
+         - 3306:3306                            # Port Einstellung
+        environment:                            # Umgebungsvariablen.
+         - MARIADB_ROOT_PASSWORD=rootpassword   # Rootpasswort
+         - MARIADB_DATABASE=testDB              # erstellte Start Datenbank
+         - MARIADB_USER=testUser                # angelegter Benutzer
+         - MARIADB_PASSWORD=password            # passwort des Benutzer
+    phpmyadmin:                                 # Name des neuen Service
+        image: phpmyadmin                       # image 
+        ports: 
+         - 8081:80                              # Port
+        environment:                            # Umgebungsvariable fuer phpmyadmin
+         - PMA_HOST=datebaseServer              # 
